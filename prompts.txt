@@ -1,0 +1,11 @@
+Para el proyecto se usaron diferentes tipos de Prompts
+
+1. Necesito diseñar la base de datos en Supabase para un sistema de préstamo de equipos universitarios con dos roles: estudiante y administrador. Genera el script SQL para las tablas perfiles, equipos y prestamos con sus llaves foráneas y políticas RLS para que los estudiantes solo vean y creen sus propias solicitudes, mientras que el administrador pueda aprobar préstamos y gestionar el inventario
+
+2. Implementa la lógica en TypeScript usando expo-image-picker para seleccionar una imagen desde la galería o cámara, convertirla y subirla a los buckets avatares y equipos de Supabase Storage devolviendo la URL pública
+
+3. Quiero hacer el login más bonito y moderno, manteniendo el selector para iniciar sesión o registrarse como estudiante con foto, carnet y carrera
+
+4. ¿Cómo puedo agregar una opción para que el administrador elimine equipos desde el catálogo y qué política RLS necesito activar en Supabase para permitir el DELETE sin romper el historial?
+
+5. Me sale el error 'Unable to resolve module @expo/vector-icons' al compilar el nuevo login en Expo 57. Dame una alternativa limpia sin depender de paquetes externos, o indícame cómo instalar la librería correctamente.
