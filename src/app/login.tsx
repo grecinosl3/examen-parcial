@@ -20,9 +20,7 @@ import {
 } from "react-native";
 
 export default function AuthScreen() {
-
-
-useEffect(() => {
+  useEffect(() => {
     if (Platform.OS !== "web") return;
     const style = document.createElement("style");
     style.textContent = `
@@ -50,10 +48,11 @@ useEffect(() => {
   const [password, setPassword] = useState("");
   const [verPassword, setVerPassword] = useState(false);
   const [esRegistro, setEsRegistro] = useState(false);
+  const [rol, setRol] = useState<"estudiante" | "admin">("estudiante");
   const [cargando, setCargando] = useState(false);
   const [campoActivo, setCampoActivo] = useState<string | null>(null);
 
-  // Campos de auto-registro para Estudiante
+  // Campos de auto-registro
   const [nombreCompleto, setNombreCompleto] = useState("");
   const [carnet, setCarnet] = useState("");
   const [carrera, setCarrera] = useState("");
@@ -65,8 +64,6 @@ useEffect(() => {
       Alert.alert("Permiso requerido", "Debes permitir acceso a tus fotos.");
       return;
     }
-
-    
 
     const resultado = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -89,10 +86,15 @@ useEffect(() => {
     setCargando(true);
     try {
       if (esRegistro) {
-        if (!nombreCompleto.trim() || !carnet.trim() || !carrera.trim()) {
+        if (
+          !nombreCompleto.trim() ||
+          (rol === "estudiante" && (!carnet.trim() || !carrera.trim()))
+        ) {
           Alert.alert(
             "Datos incompletos",
-            "Completa nombre completo, carnet y carrera."
+            rol === "estudiante"
+              ? "Completa nombre completo, carnet y carrera."
+              : "Completa tu nombre completo."
           );
           setCargando(false);
           return;
@@ -115,17 +117,19 @@ useEffect(() => {
         const { error: profileError } = await supabase.from("perfiles").insert({
           id: authData.user.id,
           email: email.trim(),
-          rol: "estudiante",
+          rol: rol,
           nombre_completo: nombreCompleto.trim(),
-          carnet: carnet.trim(),
-          carrera: carrera.trim(),
+          carnet: rol === "estudiante" ? carnet.trim() : "ADMIN",
+          carrera: rol === "estudiante" ? carrera.trim() : "Administración",
           foto_url: fotoUrl,
         });
         if (profileError) throw profileError;
 
         Alert.alert(
           "¡Registro exitoso!",
-          "Tu cuenta de estudiante ya está lista."
+          rol === "admin"
+            ? "Tu cuenta de administrador ya está lista."
+            : "Tu cuenta de estudiante ya está lista."
         );
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -215,13 +219,62 @@ useEffect(() => {
                     esRegistro && styles.segmentTextActive,
                   ]}
                 >
-                  Soy Estudiante
+                  Registrarse
                 </ThemedText>
               </Pressable>
             </View>
 
             {esRegistro && (
               <>
+                {/* Selector de rol Estudiante / Administrador */}
+                <View style={styles.field}>
+                  <ThemedText type="smallBold" style={styles.label}>
+                    Tipo de cuenta
+                  </ThemedText>
+                  <View
+                    style={[
+                      styles.segmentedControl,
+                      { backgroundColor: theme.background },
+                    ]}
+                  >
+                    <Pressable
+                      style={[
+                        styles.segmentBtn,
+                        rol === "estudiante" && styles.segmentBtnActive,
+                      ]}
+                      onPress={() => setRol("estudiante")}
+                    >
+                      <ThemedText
+                        type="smallBold"
+                        style={[
+                          styles.segmentText,
+                          rol === "estudiante" && styles.segmentTextActive,
+                        ]}
+                      >
+                        Estudiante
+                      </ThemedText>
+                    </Pressable>
+
+                    <Pressable
+                      style={[
+                        styles.segmentBtn,
+                        rol === "admin" && styles.segmentBtnActive,
+                      ]}
+                      onPress={() => setRol("admin")}
+                    >
+                      <ThemedText
+                        type="smallBold"
+                        style={[
+                          styles.segmentText,
+                          rol === "admin" && styles.segmentTextActive,
+                        ]}
+                      >
+                        Administrador
+                      </ThemedText>
+                    </Pressable>
+                  </View>
+                </View>
+
                 {/* Selector de avatar mejorado */}
                 <Pressable style={styles.photoWrapper} onPress={seleccionarFoto}>
                   {fotoUri ? (
@@ -279,64 +332,66 @@ useEffect(() => {
                   </View>
                 </View>
 
-                {/* Carnet y Carrera en fila */}
-                <View style={styles.rowFields}>
-                  <View style={[styles.field, { flex: 1 }]}>
-                    <ThemedText type="smallBold" style={styles.label}>
-                      Carnet
-                    </ThemedText>
-                    <View
-                      style={[
-                        styles.inputWrapper,
-                        { backgroundColor: theme.background },
-                        campoActivo === "carnet" && styles.inputFocused,
-                      ]}
-                    >
-                      <Ionicons
-                        name="card-outline"
-                        size={18}
-                        color={campoActivo === "carnet" ? "#818CF8" : "#64748B"}
-                      />
-                      <TextInput
-                        style={[styles.input, { color: theme.text }]}
-                        value={carnet}
-                        onChangeText={setCarnet}
-                        onFocus={() => setCampoActivo("carnet")}
-                        onBlur={() => setCampoActivo(null)}
-                        placeholder="0907-24-123"
-                        placeholderTextColor={theme.textSecondary}
-                      />
+                {/* Carnet y Carrera en fila (solo para Estudiante) */}
+                {rol === "estudiante" && (
+                  <View style={styles.rowFields}>
+                    <View style={[styles.field, { flex: 1 }]}>
+                      <ThemedText type="smallBold" style={styles.label}>
+                        Carnet
+                      </ThemedText>
+                      <View
+                        style={[
+                          styles.inputWrapper,
+                          { backgroundColor: theme.background },
+                          campoActivo === "carnet" && styles.inputFocused,
+                        ]}
+                      >
+                        <Ionicons
+                          name="card-outline"
+                          size={18}
+                          color={campoActivo === "carnet" ? "#818CF8" : "#64748B"}
+                        />
+                        <TextInput
+                          style={[styles.input, { color: theme.text }]}
+                          value={carnet}
+                          onChangeText={setCarnet}
+                          onFocus={() => setCampoActivo("carnet")}
+                          onBlur={() => setCampoActivo(null)}
+                          placeholder="0907-24-123"
+                          placeholderTextColor={theme.textSecondary}
+                        />
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={[styles.field, { flex: 1.2 }]}>
-                    <ThemedText type="smallBold" style={styles.label}>
-                      Carrera
-                    </ThemedText>
-                    <View
-                      style={[
-                        styles.inputWrapper,
-                        { backgroundColor: theme.background },
-                        campoActivo === "carrera" && styles.inputFocused,
-                      ]}
-                    >
-                      <Ionicons
-                        name="school-outline"
-                        size={18}
-                        color={campoActivo === "carrera" ? "#818CF8" : "#64748B"}
-                      />
-                      <TextInput
-                        style={[styles.input, { color: theme.text }]}
-                        value={carrera}
-                        onChangeText={setCarrera}
-                        onFocus={() => setCampoActivo("carrera")}
-                        onBlur={() => setCampoActivo(null)}
-                        placeholder="Sistemas"
-                        placeholderTextColor={theme.textSecondary}
-                      />
+                    <View style={[styles.field, { flex: 1.2 }]}>
+                      <ThemedText type="smallBold" style={styles.label}>
+                        Carrera
+                      </ThemedText>
+                      <View
+                        style={[
+                          styles.inputWrapper,
+                          { backgroundColor: theme.background },
+                          campoActivo === "carrera" && styles.inputFocused,
+                        ]}
+                      >
+                        <Ionicons
+                          name="school-outline"
+                          size={18}
+                          color={campoActivo === "carrera" ? "#818CF8" : "#64748B"}
+                        />
+                        <TextInput
+                          style={[styles.input, { color: theme.text }]}
+                          value={carrera}
+                          onChangeText={setCarrera}
+                          onFocus={() => setCampoActivo("carrera")}
+                          onBlur={() => setCampoActivo(null)}
+                          placeholder="Sistemas"
+                          placeholderTextColor={theme.textSecondary}
+                        />
+                      </View>
                     </View>
                   </View>
-                </View>
+                )}
               </>
             )}
 
@@ -422,7 +477,11 @@ useEffect(() => {
               ) : (
                 <View style={styles.buttonContent}>
                   <ThemedText style={styles.primaryButtonText}>
-                    {esRegistro ? "Crear Cuenta Estudiantil" : "Ingresar al Sistema"}
+                    {esRegistro
+                      ? rol === "admin"
+                        ? "Crear Cuenta Administrador"
+                        : "Crear Cuenta Estudiantil"
+                      : "Ingresar al Sistema"}
                   </ThemedText>
                   <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
                 </View>
@@ -435,9 +494,13 @@ useEffect(() => {
                 size={14}
                 color="#64748B"
               />
-              <ThemedText type="small" themeColor="textSecondary" style={styles.footerText}>
+              <ThemedText
+                type="small"
+                themeColor="textSecondary"
+                style={styles.footerText}
+              >
                 {esRegistro
-                  ? "Acceso inmediato al catálogo de equipos"
+                  ? "Acceso inmediato según el rol seleccionado"
                   : "Estudiantes y Administradores usan este acceso"}
               </ThemedText>
             </View>
@@ -590,7 +653,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
   },
-inputWrapper: {
+  inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
@@ -599,10 +662,9 @@ inputWrapper: {
     paddingHorizontal: 12,
     height: 48,
     gap: 10,
-    overflow: "hidden", 
+    overflow: "hidden",
   },
-
-inputFocused: {
+  inputFocused: {
     borderColor: "#6366F1",
     borderWidth: 1.5,
   },
@@ -610,7 +672,7 @@ inputFocused: {
     flex: 1,
     fontSize: 15,
     height: "100%",
-    backgroundColor: "transparent", 
+    backgroundColor: "transparent",
   },
   primaryButton: {
     backgroundColor: "#4F46E5",
