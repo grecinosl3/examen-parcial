@@ -1,20 +1,20 @@
 a) Que entendió del problema y que tablas/modelo planeo?
 
-El problema desde mi punto de vista consistia en controlar el proceso de prestamos de equipos dentro de una institución educativo por eso el registro de estudiantes. Para poder resolverlo se realizo de la siguiente manera:
+El problema desde mi punto de vista consistía en controlar el proceso de prestamos de equipos dentro de una institución educativo por eso el registro de estudiantes. Para poder resolverlo se realizo de la siguiente manera:
 
-El estudiante, se puede auregistrar con sus datos académicos y fotografía, este puede consultar en tiempo real los prestamos, especificando su fecha de retiro y devolución 
+El estudiante, se puede autorregistrar con sus datos académicos y fotografía, este puede consultar en tiempo real los prestamos, especificando su fecha de retiro y devolución 
 
 El administrador, supervisa todo el inventario y este es el que aprueba cada solicitud y también genera el reporte de uso.
 
 Las tablas que se uso en supabase fueron las siguientes
  
-La de perfiles, esta tabla mira quienes son los usuarios autenticados y también el rol de cada uno 
-Equipos: Muestra el inventario de los productos 
-Prestamos: registra las transacciones 
+La de perfiles, esta tabla mira quienes son los usuarios autenticados y también el rol de cada uno (id vinculado a auth.users, email, rol, nombre_completo, carnet, carrera y foto_url).
+Equipos: Muestra el inventario de los productos (id, nombre, descripcion, imagen_url y el estado booleano disponible)
+Prestamos: registra las transacciones (id, estudiante_id → perfiles.id, equipo_id → equipos.id, fecha_prestamo, fecha_devolucion y estado: pendiente, aprobado, rechazado o devuelto)
 
 b) Que partes se delegaron a la IA y porque 
 
-Durante el desarrollo del sistema, se implemento inteligencia artifical para el modelado de supabase, es decir para la generación de la sintaxis SQL para la creación de tablas debido a que se necesitaba el RLS y restrigir acciones según el rol 
+Durante el desarrollo del sistema, se implemento inteligencia artificial para el modelado de supabase, es decir para la generación de la sintaxis SQL para la creación de tablas debido a que se necesitaba el RLS y restringir acciones según el rol 
 
 
 También se uso para la implementación de la lógica de la selección de imágenes con expo image picker esto fue para la conversión de archivos y equipos
@@ -25,10 +25,10 @@ También lo use para la resolución de errores, fue para depurar errores de comp
 
 c) al menos una cosa que IA hizo mal y como se dio cuenta? 
  
-Durante el desarrollo tuve dos incovenientes 
+Durante el desarrollo tuve dos inconvenientes 
 
-La primera fue la de una librería que no estaba instalada en el proyecto, al rediseñar la parte del login la Ia uso un paquete que no estaba instalado, y me di cuenta porque inmediatamente expo me arrojo un error de compilación en pantalla, y lo corregi instalando el paquete.
+La primera fue la de una librería que no estaba instalada en el proyecto, al rediseñar la parte del login la IA uso un paquete que no estaba instalado, y me di cuenta porque inmediatamente expo me arrojo un error de compilación en pantalla, y lo corregí instalando el paquete.
 
-otro error de la IA fue al momento de llenar los campos de login, La IA no implemento bien los colores y se mostraba en blanco los campos cuando el navegador esta en negro lo que daba un efecto que era feo y se corregio usando los colores que se ocuparon 
+otro error de la IA fue al momento de llenar los campos de login, La IA no implemento bien los colores y se mostraba en blanco los campos cuando el navegador esta en negro lo que daba un efecto que era feo y se corrigió usando los colores que se ocuparon 
 
-El ultimo error fue que las alertas porque la IA lo que hizo fue usar el componente Alert.alert() de React y esto lo que provocaba era al presionar el botón generar reporte la ventana emergente no se me desplegaba correctamente y se corrigio usando validaciones según la plataforma es decir Platform.os === web que esta usa Windows.alert, esto para web y para mobiles se uso el Alert.alert()
+El ultimo error fue que las alertas porque la IA lo que hizo fue usar el componente Alert.alert() de React y esto lo que provocaba era al presionar el botón generar reporte la ventana emergente no se me desplegaba correctamente y se corrigio usando validaciones según la plataforma es decir Platform.os === web que esta usa Windows.alert, esto para web y para móviles se uso el Alert.alert()
